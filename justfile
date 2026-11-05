@@ -20,7 +20,7 @@ build: generate
     xcodebuild -project S3Mountain.xcodeproj -scheme S3Mountain -configuration Debug -derivedDataPath build/unsigned CODE_SIGNING_ALLOWED=NO build
 
 build-signed: generate
-    xcodebuild -project S3Mountain.xcodeproj -scheme S3Mountain -configuration Debug -derivedDataPath build/signed DEVELOPMENT_TEAM=UGNVGWZMAU build
+    xcodebuild -project S3Mountain.xcodeproj -scheme S3Mountain -configuration Debug -derivedDataPath build/signed -allowProvisioningUpdates -allowProvisioningDeviceRegistration DEVELOPMENT_TEAM=UGNVGWZMAU build
 
 run: build-signed
     open "build/signed/Build/Products/Debug/S3 Mountain.app"

@@ -26,6 +26,15 @@ targets:
       - App
     dependencies:
       - package: MountainCore
+      - target: S3MountainFileProvider
+    entitlements:
+      path: App/S3Mountain.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - $(TeamIdentifierPrefix)run.kan.s3mountain
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)run.kan.s3mountain.shared
+        com.apple.developer.fileprovider.testing-mode: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: run.kan.s3mountain
@@ -36,6 +45,40 @@ targets:
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         COMBINE_HIDPI_IMAGES: YES
+  S3MountainFileProvider:
+    type: app-extension
+    platform: macOS
+    sources:
+      - FileProvider
+    dependencies:
+      - package: MountainCore
+    info:
+      path: FileProvider/Info.plist
+      properties:
+        CFBundleDisplayName: S3 Mountain
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.fileprovider-nonui
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).FileProviderExtension
+          NSExtensionFileProviderSupportsEnumeration: true
+          NSExtensionFileProviderDocumentGroup: $(TeamIdentifierPrefix)run.kan.s3mountain
+    entitlements:
+      path: FileProvider/FileProvider.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+        com.apple.security.application-groups:
+          - $(TeamIdentifierPrefix)run.kan.s3mountain
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)run.kan.s3mountain.shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: run.kan.s3mountain.FileProvider
+        PRODUCT_NAME: S3MountainFileProvider
+        GENERATE_INFOPLIST_FILE: NO
+        ENABLE_APP_SANDBOX: YES
+        SKIP_INSTALL: YES
+        MARKETING_VERSION: "0.2.0"
+        CURRENT_PROJECT_VERSION: "1"
 schemes:
   S3Mountain:
     build:
