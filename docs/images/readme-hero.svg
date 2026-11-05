@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" width="1280" height="520" role="img" aria-labelledby="title">
+  <title id="title">R2 Mountain: Finder の「場所」に R2 のバケットが表示され、大きなファイルをドラッグしてアップロードしている様子</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFF6EC"/>
+      <stop offset="1" stop-color="#FFE4D2"/>
+    </linearGradient>
+    <linearGradient id="icon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFB85E"/>
+      <stop offset="1" stop-color="#FC683D"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF9A4A"/>
+      <stop offset="1" stop-color="#F36B3B"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#B4542A" flood-opacity="0.18"/>
+    </filter>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#7A3416" flood-opacity="0.22"/>
+    </filter>
+    <clipPath id="track">
+      <rect x="380" y="11" width="112" height="10" rx="5"/>
+    </clipPath>
+    <clipPath id="window">
+      <rect x="0" y="0" width="760" height="390" rx="24"/>
+    </clipPath>
+  </defs>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Segoe UI", sans-serif; }
+    .fill { animation: upload 7s ease-in-out infinite; }
+    .card { animation: float 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .dash { animation: march 1.6s linear infinite; }
+    @keyframes upload { 0% { transform: translateX(20px); } 70% { transform: translateX(112px); } 100% { transform: translateX(112px); } }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(-7deg); } 50% { transform: translateY(-8px) rotate(-5deg); } }
+    @keyframes march { to { stroke-dashoffset: -28; } }
+    @media (prefers-reduced-motion: reduce) { .fill, .card, .dash { animation: none; } }
+  </style>
+
+  <rect width="1280" height="520" fill="url(#sky)"/>
+  <circle cx="1180" cy="70" r="140" fill="#FFD9BF" opacity="0.55"/>
+  <circle cx="90" cy="470" r="160" fill="#FFD2B5" opacity="0.45"/>
+
+  <!-- App icon -->
+  <g transform="translate(76 96)" filter="url(#soft)">
+    <g transform="scale(0.25)">
+      <rect width="1024" height="1024" rx="230" fill="url(#icon)"/>
+      <path d="M138 800L404 404Q424 376 444 404L690 800Z" fill="#5865D6"/>
+      <path d="M318 800L604 318Q624 286 644 318L912 800Z" fill="#1F2B66"/>
+      <path d="M604 318Q624 286 644 318L716 440L676 418L640 452L604 414L560 446L534 420Z" fill="#FFFFFF"/>
+      <path d="M300 170L392 270Q404 284 390 294L346 294L346 352Q346 372 326 372L274 372Q254 372 254 352L254 294L210 294Q196 284 208 270Z" fill="#FFFFFF"/>
+    </g>
+  </g>
+  <text x="76" y="400" font-size="32" font-weight="800" fill="#2A2420">R2 Mountain</text>
+  <text x="78" y="432" font-size="16" fill="#7A6A60">Cloudflare R2 を Finder に。</text>
+  <text x="78" y="456" font-size="16" fill="#7A6A60">大きなファイルも途中から再開。</text>
+
+  <!-- Finder-like window -->
+  <g transform="translate(440 64)" filter="url(#shadow)">
+    <g clip-path="url(#window)">
+      <rect width="760" height="390" fill="#FFFFFF"/>
+      <rect width="196" height="390" fill="#F5F1EE"/>
+      <line x1="196" y1="0" x2="196" y2="390" stroke="#EAE3DD"/>
+
+      <circle cx="26" cy="26" r="6.5" fill="#FF5F57"/>
+      <circle cx="47" cy="26" r="6.5" fill="#FEBC2E"/>
+      <circle cx="68" cy="26" r="6.5" fill="#28C840"/>
+
+      <text x="22" y="72" font-size="11.5" font-weight="700" fill="#9A918A">よく使う項目</text>
+      <text x="46" y="98" font-size="14" fill="#5E5650">ダウンロード</text>
+      <path d="M24 88h12M30 84v10M26 92l4 4 4-4" stroke="#9A918A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <text x="46" y="126" font-size="14" fill="#5E5650">デスクトップ</text>
+      <rect x="23" y="114" width="15" height="11" rx="2" fill="none" stroke="#9A918A" stroke-width="1.8"/>
+
+      <text x="22" y="164" font-size="11.5" font-weight="700" fill="#9A918A">場所</text>
+      <rect x="12" y="174" width="172" height="34" rx="9" fill="#FDE1CF"/>
+      <path d="M27 198h15a5 5 0 0 0 0-10 7 7 0 0 0-13-1 4.5 4.5 0 0 0-2 11z" fill="#F36B3B"/>
+      <text x="50" y="196" font-size="14" font-weight="700" fill="#3A2B22">R2 Mountain</text>
+
+      <text x="222" y="34" font-size="17" font-weight="800" fill="#2A2420">撮影データ</text>
+      <text x="222" y="54" font-size="12" fill="#9A918A">drive › 撮影データ</text>
+
+      <text x="232" y="88" font-size="12" font-weight="600" fill="#8A817A">名前</text>
+      <text x="590" y="88" font-size="12" font-weight="600" fill="#8A817A" text-anchor="end">サイズ</text>
+      <text x="612" y="88" font-size="12" font-weight="600" fill="#8A817A">状態</text>
+      <line x1="216" y1="98" x2="744" y2="98" stroke="#EEE8E3"/>
+
+      <!-- rows -->
+      <rect x="214" y="150" width="532" height="44" rx="10" fill="#F6F2EF"/>
+      <rect x="214" y="238" width="532" height="44" rx="10" fill="#F6F2EF"/>
+
+      <g transform="translate(232 112)">
+        <path d="M0 6a4 4 0 0 1 4-4h8l4 4h14a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4z" fill="#5AA0F0"/>
+        <text x="46" y="21" font-size="15" fill="#2A2420">本編素材</text>
+        <text x="358" y="21" font-size="14" fill="#9A918A" text-anchor="end">—</text>
+      </g>
+
+      <g transform="translate(232 158)">
+        <path d="M2 0h18l8 8v22a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z" fill="#E9E4E0"/>
+        <path d="M20 0v8h8" fill="#D6CFC9"/>
+        <text x="46" y="21" font-size="15" font-weight="700" fill="#2A2420">本編-4K.mov</text>
+        <text x="358" y="21" font-size="14" fill="#6E655E" text-anchor="end">38.2 GB</text>
+        <rect x="380" y="11" width="112" height="10" rx="5" fill="#F2DCCD"/>
+        <g clip-path="url(#track)">
+          <rect class="fill" x="268" y="11" width="112" height="10" rx="5" fill="url(#bar)" transform="translate(70 0)"/>
+        </g>
+      </g>
+
+      <g transform="translate(232 202)">
+        <path d="M2 0h18l8 8v22a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z" fill="#E9E4E0"/>
+        <path d="M20 0v8h8" fill="#D6CFC9"/>
+        <text x="46" y="21" font-size="15" fill="#2A2420">素材アーカイブ.zip</text>
+        <text x="358" y="21" font-size="14" fill="#6E655E" text-anchor="end">2.4 GB</text>
+        <path d="M384 24h16a5.5 5.5 0 0 0 0-11 7.5 7.5 0 0 0-14.5-1.5A5 5 0 0 0 384 24z" fill="none" stroke="#8E8680" stroke-width="2"/>
+        <path d="M392 15v7M389 19l3 3 3-3" stroke="#8E8680" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <g transform="translate(232 246)">
+        <path d="M2 0h18l8 8v22a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z" fill="#E9E4E0"/>
+        <path d="M20 0v8h8" fill="#D6CFC9"/>
+        <text x="46" y="21" font-size="15" fill="#2A2420">納品_final.mp4</text>
+        <text x="358" y="21" font-size="14" fill="#6E655E" text-anchor="end">8.7 GB</text>
+        <circle cx="392" cy="16" r="10" fill="#2FB35A"/>
+        <path d="M387 16l3.5 3.5 6-7" stroke="#FFFFFF" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <!-- path bar -->
+      <rect x="232" y="332" width="496" height="36" rx="18" fill="#F6F2EF" stroke="#ECE5DF"/>
+      <text x="254" y="355" font-size="13" fill="#7A6A60">drive  ›  撮影データ</text>
+      <text x="706" y="355" font-size="13" fill="#9A918A" text-anchor="end">フォルダ 1・ファイル 3</text>
+    </g>
+  </g>
+
+  <!-- dragged file -->
+  <path class="dash" d="M520 382C590 360 640 290 682 248" fill="none" stroke="#F36B3B" stroke-width="3" stroke-dasharray="10 8" stroke-linecap="round"/>
+  <path d="M664 246l20 0 0 20" fill="none" stroke="#F36B3B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <g class="card" filter="url(#soft)">
+    <rect x="372" y="360" width="150" height="96" rx="14" fill="#FFFFFF"/>
+    <path d="M390 378h22l9 9v26a2 2 0 0 1-2 2h-29a2 2 0 0 1-2-2v-33a2 2 0 0 1 2-2z" fill="#E9E4E0"/>
+    <path d="M412 378v9h9" fill="#D6CFC9"/>
+    <text x="432" y="396" font-size="13" font-weight="700" fill="#2A2420">撮影2.mov</text>
+    <text x="432" y="416" font-size="12" fill="#9A918A">12.6 GB</text>
+    <text x="390" y="442" font-size="12" font-weight="700" fill="#F36B3B">ドロップでアップロード</text>
+  </g>
+</svg>
