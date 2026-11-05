@@ -10,7 +10,7 @@ final class SleepAssertion {
       IOPMAssertionCreateWithName(
         kIOPMAssertionTypePreventUserIdleSystemSleep as CFString,
         IOPMAssertionLevel(kIOPMAssertionLevelOn),
-        "S3 Mountain のアップロード" as CFString,
+        "R2 Mountain のアップロード" as CFString,
         &assertion
       )
     } else if !active, assertion != 0 {

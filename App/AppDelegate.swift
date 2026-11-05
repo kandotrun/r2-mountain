@@ -6,17 +6,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
   func applicationDidFinishLaunching(_ notification: Notification) {
     NSApp.setActivationPolicy(.accessory)
-    #if DEBUG
-      if ProcessInfo.processInfo.arguments.contains("--spike-register-domain") {
-        let bucket = UploadViewModel.shared.settings.bucket
-        Task {
-          do {
-            try await FileProviderDomains.register(bucket: bucket, testing: true)
-            NSLog("S3MSPIKE domain registered: %@", bucket)
-          } catch { NSLog("S3MSPIKE domain failed: %@", String(describing: error)) }
-        }
-      }
-    #endif
     let arguments = ProcessInfo.processInfo.arguments
     if arguments.contains("--show-window") || arguments.contains("--setup-file")
       || UploadViewModel.shared.settings.accountID.isEmpty

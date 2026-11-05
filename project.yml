@@ -1,4 +1,4 @@
-name: S3Mountain
+name: R2Mountain
 options:
   bundleIdPrefix: run.kan
   deploymentTarget:
@@ -19,16 +19,27 @@ settings:
     ENABLE_APP_SANDBOX: NO
     GENERATE_INFOPLIST_FILE: YES
 targets:
-  S3Mountain:
+  R2Mountain:
     type: application
     platform: macOS
     sources:
       - App
+      - Shared
     dependencies:
       - package: MountainCore
-      - target: S3MountainFileProvider
+      - target: R2MountainFileProvider
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: R2 Mountain
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSUIElement: true
+        LSMultipleInstancesProhibited: true
+        R2MountainAppGroup: $(TeamIdentifierPrefix)run.kan.s3mountain
+        R2MountainKeychainGroup: $(AppIdentifierPrefix)run.kan.s3mountain.shared
     entitlements:
-      path: App/S3Mountain.entitlements
+      path: App/R2Mountain.entitlements
       properties:
         com.apple.security.application-groups:
           - $(TeamIdentifierPrefix)run.kan.s3mountain
@@ -38,29 +49,34 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: run.kan.s3mountain
-        PRODUCT_NAME: S3 Mountain
-        INFOPLIST_KEY_CFBundleDisplayName: S3 Mountain
-        INFOPLIST_KEY_LSUIElement: YES
-        INFOPLIST_KEY_LSMultipleInstancesProhibited: YES
-        MARKETING_VERSION: "0.1.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        PRODUCT_NAME: R2 Mountain
+        GENERATE_INFOPLIST_FILE: NO
+        MARKETING_VERSION: "0.2.0"
         CURRENT_PROJECT_VERSION: "1"
         COMBINE_HIDPI_IMAGES: YES
-  S3MountainFileProvider:
+  R2MountainFileProvider:
     type: app-extension
     platform: macOS
     sources:
       - FileProvider
+      - Shared
     dependencies:
       - package: MountainCore
     info:
       path: FileProvider/Info.plist
       properties:
-        CFBundleDisplayName: S3 Mountain
+        CFBundleDisplayName: R2 Mountain
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        R2MountainAppGroup: $(TeamIdentifierPrefix)run.kan.s3mountain
+        R2MountainKeychainGroup: $(AppIdentifierPrefix)run.kan.s3mountain.shared
         NSExtension:
           NSExtensionPointIdentifier: com.apple.fileprovider-nonui
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).FileProviderExtension
           NSExtensionFileProviderSupportsEnumeration: true
           NSExtensionFileProviderDocumentGroup: $(TeamIdentifierPrefix)run.kan.s3mountain
+          NSFileProviderUserInteractions: []
     entitlements:
       path: FileProvider/FileProvider.entitlements
       properties:
@@ -73,16 +89,16 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: run.kan.s3mountain.FileProvider
-        PRODUCT_NAME: S3MountainFileProvider
+        PRODUCT_NAME: R2MountainFileProvider
         GENERATE_INFOPLIST_FILE: NO
         ENABLE_APP_SANDBOX: YES
         SKIP_INSTALL: YES
         MARKETING_VERSION: "0.2.0"
         CURRENT_PROJECT_VERSION: "1"
 schemes:
-  S3Mountain:
+  R2Mountain:
     build:
       targets:
-        S3Mountain: all
+        R2Mountain: all
     run:
       config: Debug

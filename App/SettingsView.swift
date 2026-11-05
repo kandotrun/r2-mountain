@@ -4,6 +4,7 @@ import SwiftUI
 
 struct SettingsView: View {
   @ObservedObject var model: UploadViewModel
+  @ObservedObject private var finder = FileProviderDomains.shared
   @State private var draft = SavedR2Settings.load()
   @State private var secret = ""
   @State private var message: Feedback?
@@ -90,6 +91,26 @@ struct SettingsView: View {
         }
       }
 
+      Section {
+        Toggle("Finder に表示", isOn: finderEnabled)
+          .disabled(finder.status == .enabling)
+        LabeledContent("状態") { finderStatus }
+        if finder.status.isAvailableInFinder {
+          Button("Finder で開く", systemImage: "finder") {
+            Task {
+              do { try await finder.openInFinder() } catch {
+                message = Feedback(text: UploadViewModel.userMessage(for: error), succeeded: false)
+              }
+            }
+          }
+        }
+      } header: {
+        Text("Finder")
+      } footer: {
+        Text("バケットを Finder のサイドバーの「場所」に表示し、Finder から開く、保存する、名前を変える、削除するといった操作ができます。")
+          .foregroundStyle(.secondary)
+      }
+
       if model.hasSavedSecret {
         Section {
           Button("保存済みのシークレットを削除…", role: .destructive) { confirmDelete = true }
@@ -99,11 +120,12 @@ struct SettingsView: View {
     }
     .formStyle(.grouped)
     .safeAreaInset(edge: .bottom, spacing: 0) { footer }
-    .frame(width: 520, height: 700)
+    .frame(width: 520, height: 760)
     .onAppear {
       draft = model.settings
       secret = ""
     }
+    .task { await finder.refresh() }
     .onDisappear { secret = "" }
     // A test result only describes the values it was run with.
     .onChange(of: draft) { model.clearConnectionResult() }
@@ -152,6 +174,37 @@ struct SettingsView: View {
     .padding(.horizontal, 20)
     .padding(.bottom, 18)
     .padding(.top, 4)
+  }
+
+  private var finderEnabled: Binding<Bool> {
+    Binding(
+      get: { finder.isEnabled },
+      set: { enabled in Task { await finder.setEnabled(enabled) } }
+    )
+  }
+
+  @ViewBuilder private var finderStatus: some View {
+    switch finder.status {
+    case .off:
+      Text(finder.isEnabled ? "接続設定を保存すると表示します" : "表示していません")
+        .foregroundStyle(.secondary)
+    case .enabling:
+      HStack(spacing: 6) {
+        ProgressView().controlSize(.small)
+        Text("準備中…").foregroundStyle(.secondary)
+      }
+    case .on(userEnabled: true):
+      Label("Finder の「場所」に表示されています", systemImage: "checkmark.circle.fill")
+        .foregroundStyle(.green)
+    case .on(userEnabled: false):
+      Label("システム設定で R2 Mountain の拡張機能をオンにしてください", systemImage: "exclamationmark.triangle.fill")
+        .foregroundStyle(.orange)
+        .lineLimit(2)
+    case .failed(let text):
+      Label(text, systemImage: "xmark.octagon.fill")
+        .foregroundStyle(.red)
+        .lineLimit(3)
+    }
   }
 
   private var usesSavedSecret: Bool {

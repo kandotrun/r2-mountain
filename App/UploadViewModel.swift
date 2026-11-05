@@ -13,6 +13,15 @@ struct SavedR2Settings: Equatable {
     R2Configuration(accountID: accountID, bucket: bucket, jurisdiction: jurisdiction)
   }
 
+  /// The extension reads this from the App Group and the secret from the shared Keychain.
+  var finderConnection: FinderConnection? {
+    let accessKeyID = accessKeyID.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !accessKeyID.isEmpty, (try? configuration.validate()) != nil else { return nil }
+    return FinderConnection(
+      accountID: accountID, bucket: bucket, jurisdiction: jurisdiction.rawValue,
+      accessKeyID: accessKeyID)
+  }
+
   static func load() -> Self {
     let defaults = UserDefaults.standard
     return Self(
@@ -60,6 +69,7 @@ final class UploadViewModel: ObservableObject {
 
   private var supportDirectory: URL {
     FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+      // Kept from the former name so existing transfer records still resume.
       .appendingPathComponent("S3Mountain", isDirectory: true)
   }
 
@@ -83,7 +93,7 @@ final class UploadViewModel: ObservableObject {
     do {
       instanceLock = try ApplicationInstanceLock(directory: supportDirectory)
     } catch {
-      errorMessage = "S3 Mountain はすでに起動しています。メニューバーの山のアイコンを開いてください。"
+      errorMessage = "R2 Mountain はすでに起動しています。メニューバーの山のアイコンを開いてください。"
       Task { NSApp.terminate(nil) }
       return
     }
@@ -97,8 +107,13 @@ final class UploadViewModel: ObservableObject {
     } catch {
       errorMessage = Self.userMessage(for: error)
     }
+    credentials.migrateLegacySecret(
+      accountID: settings.accountID, accessKeyID: settings.accessKeyID)
     network = NetworkObserver { [weak self] in
-      Task { @MainActor in await self?.engine?.resumeWaiting() }
+      Task { @MainActor in
+        await self?.engine?.resumeWaiting()
+        FileProviderDomains.shared.resolveErrors(.serverUnreachable)
+      }
     }
     Task { await configureEngine() }
   }
@@ -212,6 +227,8 @@ final class UploadViewModel: ObservableObject {
     settings = candidate
     candidate.save()
     await configureEngine()
+    // A corrected key must also unblock Finder items that failed to authenticate.
+    FileProviderDomains.shared.resolveErrors(.notAuthenticated)
   }
 
   func deleteSavedSecret() async throws {
@@ -220,6 +237,7 @@ final class UploadViewModel: ObservableObject {
     subscription?.cancel()
     engine = nil
     try credentials.delete(accountID: settings.accountID, accessKeyID: settings.accessKeyID)
+    SharedConfiguration.clear()
     BrowserModel.shared.disconnect()
     hasSavedSecret = false
     isConfigured = false
@@ -243,6 +261,11 @@ final class UploadViewModel: ObservableObject {
     isConfigured = false
     hasSavedSecret = false
     guard instanceLock != nil else { return }
+    startEngine()
+    await FileProviderDomains.shared.bucketDidChange(to: settings.finderConnection)
+  }
+
+  private func startEngine() {
     do {
       guard !settings.accountID.isEmpty, !settings.accessKeyID.isEmpty, !settings.bucket.isEmpty
       else {
@@ -308,6 +331,7 @@ final class UploadViewModel: ObservableObject {
         if job.state == .completed { uploadedKeys.append(job.key) }
       }
       BrowserModel.shared.objectsDidChange(keys: uploadedKeys)
+      if !uploadedKeys.isEmpty { FileProviderDomains.shared.signalChanges() }
     }
     hasReceivedSnapshot = true
     previousStates = Dictionary(uniqueKeysWithValues: snapshot.map { ($0.id, $0.state) })

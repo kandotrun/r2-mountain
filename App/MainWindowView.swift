@@ -6,12 +6,13 @@ import UniformTypeIdentifiers
 struct MainWindowView: View {
   @ObservedObject var model: UploadViewModel
   @ObservedObject var browser: BrowserModel
+  @ObservedObject private var finder = FileProviderDomains.shared
   @AppStorage("window.showsTransfers") private var showsTransfers = true
   @State private var showsNewFolder = false
 
   var body: some View {
     NavigationSplitView {
-      SidebarView(model: model, browser: browser)
+      SidebarView(model: model, browser: browser, finder: finder)
         .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 300)
     } detail: {
       Group {
@@ -30,7 +31,7 @@ struct MainWindowView: View {
         }
       }
       .navigationTitle(
-        browser.isConnected ? browser.displayName(of: browser.current) : "S3 Mountain"
+        browser.isConnected ? browser.displayName(of: browser.current) : "R2 Mountain"
       )
       .navigationSubtitle(
         browser.isConnected && !browser.current.isRoot
@@ -127,6 +128,7 @@ private struct TransfersToolbarLabel: View {
 private struct SidebarView: View {
   @ObservedObject var model: UploadViewModel
   @ObservedObject var browser: BrowserModel
+  @ObservedObject var finder: FileProviderDomains
 
   var body: some View {
     List(selection: selection) {
@@ -159,10 +161,30 @@ private struct SidebarView: View {
         }
         .buttonStyle(.borderless)
         .keyboardShortcut(",", modifiers: .command)
-        Spacer()
+        Spacer(minLength: 8)
+        if finder.status.isAvailableInFinder {
+          Button(action: openInFinder) {
+            // The sidebar can be narrower than both labels.
+            ViewThatFits(in: .horizontal) {
+              Label("Finder で開く", systemImage: "finder")
+              Label("Finder で開く", systemImage: "finder").labelStyle(.iconOnly)
+            }
+          }
+          .buttonStyle(.borderless)
+          .help("Finder で開く")
+          .layoutPriority(1)
+        }
       }
       .padding(.horizontal, 16)
       .padding(.vertical, 12)
+    }
+  }
+
+  private func openInFinder() {
+    Task {
+      do { try await finder.openInFinder() } catch {
+        model.errorMessage = UploadViewModel.userMessage(for: error)
+      }
     }
   }
 

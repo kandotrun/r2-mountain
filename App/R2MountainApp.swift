@@ -11,18 +11,19 @@ enum MenuBarSymbol {
 }
 
 @main
-struct S3MountainApp: App {
+struct R2MountainApp: App {
   @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
   @StateObject private var model = UploadViewModel.shared
   @StateObject private var browser = BrowserModel.shared
+  @StateObject private var finder = FileProviderDomains.shared
 
   var body: some Scene {
     MenuBarExtra {
-      MenuBarPanel(model: model, browser: browser)
+      MenuBarPanel(model: model, browser: browser, finder: finder)
     } label: {
       let summary = model.summary
       Image(systemName: MenuBarSymbol.name(for: summary))
-        .accessibilityLabel("S3 Mountain、\(summary.headline)")
+        .accessibilityLabel("R2 Mountain、\(summary.headline)")
     }
     .menuBarExtraStyle(.window)
     .commands {

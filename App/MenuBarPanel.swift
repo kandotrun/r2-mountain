@@ -5,6 +5,7 @@ import SwiftUI
 struct MenuBarPanel: View {
   @ObservedObject var model: UploadViewModel
   @ObservedObject var browser: BrowserModel
+  @ObservedObject var finder: FileProviderDomains
   @State private var dropTargeted = false
   @State private var creatingFolder = false
 
@@ -38,7 +39,7 @@ struct MenuBarPanel: View {
         .foregroundStyle(.tint)
         .accessibilityHidden(true)
       VStack(alignment: .leading, spacing: 1) {
-        Text("S3 Mountain").font(.headline)
+        Text("R2 Mountain").font(.headline)
         Text(model.isConfigured ? model.summary.headline : "未接続")
           .font(.callout)
           .foregroundStyle(.secondary)
@@ -46,9 +47,18 @@ struct MenuBarPanel: View {
       Spacer()
       Menu {
         Button("ウィンドウを開く", systemImage: "macwindow") { ApplicationWindows.shared.showMain() }
+        if finder.status.isAvailableInFinder {
+          Button("Finder で開く", systemImage: "finder") {
+            Task {
+              do { try await finder.openInFinder() } catch {
+                model.errorMessage = UploadViewModel.userMessage(for: error)
+              }
+            }
+          }
+        }
         Button("接続設定…", systemImage: "gearshape") { ApplicationWindows.shared.showSettings() }
         Divider()
-        Button("S3 Mountain を終了", systemImage: "power") { NSApp.terminate(nil) }
+        Button("R2 Mountain を終了", systemImage: "power") { NSApp.terminate(nil) }
       } label: {
         Image(systemName: "ellipsis")
           .frame(width: 18, height: 18)
