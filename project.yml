@@ -1,0 +1,45 @@
+name: S3Mountain
+options:
+  bundleIdPrefix: run.kan
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+  developmentLanguage: ja
+packages:
+  MountainCore:
+    path: Packages/MountainCore
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    DEVELOPMENT_TEAM: UGNVGWZMAU
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_HARDENED_RUNTIME: YES
+    ENABLE_APP_SANDBOX: NO
+    GENERATE_INFOPLIST_FILE: YES
+targets:
+  S3Mountain:
+    type: application
+    platform: macOS
+    sources:
+      - App
+    dependencies:
+      - package: MountainCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: run.kan.s3mountain
+        PRODUCT_NAME: S3 Mountain
+        INFOPLIST_KEY_CFBundleDisplayName: S3 Mountain
+        INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_LSMultipleInstancesProhibited: YES
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        COMBINE_HIDPI_IMAGES: YES
+schemes:
+  S3Mountain:
+    build:
+      targets:
+        S3Mountain: all
+    run:
+      config: Debug
