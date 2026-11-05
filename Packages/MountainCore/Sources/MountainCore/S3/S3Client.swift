@@ -1,7 +1,7 @@
 import Foundation
 
 public actor S3Client: S3ObjectStore {
-  private let configuration: R2Configuration
+  let configuration: R2Configuration
   private let credentials: S3Credentials
   private let transport: any S3HTTPTransport
   private let dateProvider: @Sendable () -> Date
@@ -33,7 +33,8 @@ public actor S3Client: S3ObjectStore {
       throw S3Failure(status: response.status, code: "MissingObjectMetadata")
     }
     return S3ObjectMetadata(
-      size: size, eTag: eTag, jobID: response.headers["x-amz-meta-s3-mountain-job-id"])
+      size: size, eTag: eTag, jobID: response.headers["x-amz-meta-s3-mountain-job-id"],
+      lastModified: response.headers["last-modified"].flatMap(Self.httpDate))
   }
 
   public func put(key: String, file: URL, size: Int64, contentMD5: String, jobID: String)
@@ -52,11 +53,15 @@ public actor S3Client: S3ObjectStore {
 
   public func createMultipart(key: String, jobID: String) async throws -> String {
     try validate(jobID: jobID)
+    return try await initiateMultipart(
+      key: key, metadata: ["x-amz-meta-s3-mountain-job-id": jobID])
+  }
+
+  func initiateMultipart(key: String, metadata: [String: String]) async throws -> String {
     let response = try await perform(
       method: "POST", key: key, query: [("uploads", "")],
-      headers: [
-        "content-type": "application/octet-stream", "x-amz-meta-s3-mountain-job-id": jobID,
-      ], body: .data(Data()))
+      headers: metadata.merging(["content-type": "application/octet-stream"]) { $1 },
+      body: .data(Data()))
     let root = try document(response, expectedRoot: "InitiateMultipartUploadResult")
     guard let uploadID = root.value("UploadId"), !uploadID.isEmpty else {
       throw S3Failure(status: response.status, code: "MissingUploadID")
@@ -119,6 +124,12 @@ public actor S3Client: S3ObjectStore {
   public func completeMultipart(key: String, uploadID: String, parts: [S3CompletedPart])
     async throws -> String
   {
+    try await finishMultipart(key: key, uploadID: uploadID, parts: parts, createOnly: true)
+  }
+
+  func finishMultipart(
+    key: String, uploadID: String, parts: [S3CompletedPart], createOnly: Bool
+  ) async throws -> String {
     let ordered = parts.sorted { $0.number < $1.number }
     guard !uploadID.isEmpty, !ordered.isEmpty, ordered.count <= 10_000,
       Set(ordered.map(\.number)).count == ordered.count,
@@ -130,11 +141,11 @@ public actor S3Client: S3ObjectStore {
       "<Part><PartNumber>\($0.number)</PartNumber><ETag>\(S3XML.escape($0.eTag))</ETag></Part>"
     }.joined()
     let body = Data(("<CompleteMultipartUpload>" + content + "</CompleteMultipartUpload>").utf8)
+    var headers = ["content-type": "application/xml"]
+    if createOnly { headers["if-none-match"] = "*" }
     let response = try await perform(
-      method: "POST", key: key, query: [("uploadId", uploadID)],
-      headers: [
-        "content-type": "application/xml", "if-none-match": "*",
-      ], body: .data(body))
+      method: "POST", key: key, query: [("uploadId", uploadID)], headers: headers,
+      body: .data(body))
     let root = try document(response, expectedRoot: "CompleteMultipartUploadResult")
     guard let value = root.value("ETag"), !value.isEmpty else {
       throw S3Failure(status: response.status, code: "MissingETag")
@@ -153,7 +164,8 @@ public actor S3Client: S3ObjectStore {
     query: [(String, String)] = [],
     headers extraHeaders: [String: String] = [:],
     body: S3RequestBody = .none,
-    allowNotFound: Bool = false
+    allowNotFound: Bool = false,
+    download: (file: URL, progress: @Sendable (Int64) -> Void)? = nil
   ) async throws -> S3HTTPResponse {
     try configuration.validate()
     guard !credentials.accessKeyID.isEmpty, !credentials.secretAccessKey.isEmpty,
@@ -195,8 +207,14 @@ public actor S3Client: S3ObjectStore {
         headers: headers, payloadHash: "UNSIGNED-PAYLOAD", credentials: credentials
       )
       headers["authorization"] = signature.authorization
-      let response = try await transport.send(
-        S3HTTPRequest(url: url, method: method, headers: headers, body: body))
+      let request = S3HTTPRequest(url: url, method: method, headers: headers, body: body)
+      let response: S3HTTPResponse
+      if let download {
+        response = try await transport.download(
+          request, to: download.file, progress: download.progress)
+      } else {
+        response = try await transport.send(request)
+      }
       if (200...299).contains(response.status) || (allowNotFound && response.status == 404) {
         return response
       }
@@ -247,14 +265,14 @@ public actor S3Client: S3ObjectStore {
     return nil
   }
 
-  private func eTag(_ response: S3HTTPResponse) throws -> String {
+  func eTag(_ response: S3HTTPResponse) throws -> String {
     guard let eTag = response.headers["etag"], !eTag.isEmpty else {
       throw S3Failure(status: response.status, code: "MissingETag")
     }
     return eTag
   }
 
-  private func validate(file: URL, size: Int64, contentMD5: String) throws {
+  func validate(file: URL, size: Int64, contentMD5: String) throws {
     guard file.isFileURL, size >= 0, Data(base64Encoded: contentMD5)?.count == 16 else {
       throw S3Failure(status: 0, code: "InvalidUploadBody")
     }

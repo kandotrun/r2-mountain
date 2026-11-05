@@ -26,6 +26,20 @@ struct S3ClientTests {
     #expect(metadata == S3ObjectMetadata(size: 123, eTag: "\"abc\"", jobID: "job-1"))
   }
 
+  @Test("HEAD reports the server's Last-Modified so new items show the stored date")
+  func headLastModified() async throws {
+    let transport = RecordingS3Transport([
+      s3Response(headers: [
+        "Content-Length": "5", "ETag": "\"e\"", "Last-Modified": "Wed, 05 Nov 2026 02:56:03 GMT",
+      ]),
+      s3Response(headers: ["Content-Length": "5", "ETag": "\"e\"", "Last-Modified": "garbage"]),
+    ])
+    let client = makeS3Client(transport)
+    let dated = try #require(try await client.head(key: "a"))
+    #expect(dated.lastModified == Date(timeIntervalSince1970: 1_793_847_363))
+    #expect(try await client.head(key: "b")?.lastModified == nil)
+  }
+
   @Test("PUT is create-only and preserves UTF8 paths without double encoding")
   func putEncodingAndHeaders() async throws {
     let file = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

@@ -42,11 +42,13 @@ public struct S3ObjectMetadata: Sendable, Equatable {
   public let size: Int64
   public let eTag: String
   public let jobID: String?
+  public let lastModified: Date?
 
-  public init(size: Int64, eTag: String, jobID: String? = nil) {
+  public init(size: Int64, eTag: String, jobID: String? = nil, lastModified: Date? = nil) {
     self.size = size
     self.eTag = eTag
     self.jobID = jobID
+    self.lastModified = lastModified
   }
 }
 
